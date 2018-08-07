@@ -15,6 +15,7 @@
 \usepackage{geometry}                % 页边距调整
 \geometry{top=3.0cm,bottom=2.7cm,left=2.5cm,right=2.5cm}
 %====================公式按章编号==========================
+\usepackage{enumerate}
 \numberwithin{equation}{section}
 \numberwithin{table}{section}
 \numberwithin{figure}{section}
@@ -251,62 +252,374 @@ The verification of these systems is done by providing a formal proof on an abst
 \section{安全协议的形式化分析方法}
 安全协议的形式化分析从方法上可以分为：逻辑推理、模型检测、定理证明。
 
-\subsection{逻辑推理}
-逻辑推理是基于知识与信念推理的分析方法，主要运用逻辑系统从用户接受和发送的消息出发，通过一系列的推理公推证协议是否满足安全规范\cite{2}。
+\subsection{模态逻辑技术}
+为了对安全协议进行形式化逻辑推理，必须先对安全协议所涉及的各种对象、状态和关系等进行逻辑抽象。逻辑抽象的作用就是将针对安全性质的讨论放在与算法的数学细节无关的层次上进行，以便于直接理解安全问题的核心，展现问题的逻辑本质。不同形式化框架之间的差别也正是在于逻辑抽象的不同\cite{book}。
 
-模态逻辑方法是分析安全协议最直接，最简单的一种方法。
+模态逻辑分析方法是基于知识与信念推理的分析方法，主要包括信仰逻辑方法和知识逻辑方法，运用逻辑系统从用户接受和发送的消息出发，通过一系列的推理公推证协议是否满足安全规范。逻辑系统是由响应的逻辑语言和推理规则组成的，语言用来描述命题，表示主体对消息的信念和知识，应用推理规则可以从已知的信念或知识推导出新的信念和知识。\cite{book}\cite{2}。
 
-1989年，Burrows，Abadi和Needham提出了著名的BAN逻辑，这种逻辑利用知识和信念逻辑来描述和推理认证协议，通过协议理想化、初始嘉定确定、断言确定和逻辑推理等步骤，验证协议的人整形目标。它简单，直观，便于掌握和使用，是安全协议形式化分析研究中的一个重要的里程碑。
+模态逻辑方法是分析安全协议最直接，最简单的一种方法，它的基本思想是：
+
+\begin{enumerate}[(1)]
+\item 在安全协议执行前，主体拥有的初始信念或知识。
+\item 安全协议的执行过程时主体之间传递信念或知识的过程。随着协议的逐步执行，主体可以通过设定好的推理规则不断从已知的信念或知识推导出新的信念或知识。
+\item 安全协议需要验证的安全属性也表示为主体的信念或知识，称为“目标信念或目标知识”。
+\item 验证安全协议是否满足所需的安全属性，就等价于安全协议执行完毕时，主体能否从初始信念或知识推导出目标信念或目标知识。所以模态逻辑验证是一个演绎推理的过程。
+\end{enumerate}
+
+依照模态逻辑方法的基本思想，这种方法的验证过程为如下几步：
+
+\begin{enumerate}[(1)]
+\item 对所需要的规则和公理进行形式化描述。
+\item 用逻辑语言形式化地说明协议的步骤。
+\item 形式化地描述协议的预期目标（也就是需要验证的安全属性）。
+\item 从最初的协议假设开始，运用逻辑公理和推导规则对协议的每一步进行逻辑声明。
+\item 将得到的逻辑声明与协议的预期目标进行比较，看是否一致，由此来确定协议是否满足安全属性。
+\end{enumerate}
+
+1989年，Burrows，Abadi和Needham提出了著名的BAN逻辑，这种逻辑利用知识和信念逻辑来描述和推理认证协议，通过协议理想化、初始嘉定确定、断言确定和逻辑推理等步骤，验证协议的人整形目标。它简单，直观，便于掌握和使用，是安全协议形式化分析研究中的一个重要的里程碑\cite{2}。
 
 但是，BAN逻辑也有缺陷，它的语义不够精确、协议理想化和初始假设的确定非形式化、推理规则不够完备等，只能验证认证性质，不能认证机密性等其他安全性等\cite{2}。
 
 为了克服BAN逻辑的不足，之后又出现多种BAN类逻辑，如GNY、AT、VO、SVO和MB等逻辑，这些扩展的BAN类逻辑语义更加精确，且根据具体使用情况，学者们还提出了一些专用逻辑，用于分析特定的协议，使这种方法能够支持复杂的安全协议验证，能够检测BAN逻辑无法检测的攻击，应用十分广泛，但都没有原始的BAN逻辑简单实用。
 
-下面介绍BAN逻辑的基本原理。
 
-BAN逻辑的推理步骤： 
+\subsubsection{BAN逻辑}
+BAN逻辑以及类BAN逻辑都是基于信仰的逻辑。
+\paragraph{基本术语}\
+
+BAN逻辑的处理对象包括主体（Principals）、密钥（Keys）和公式或命题（Formula or Statement）。一般用P、Q、R表示主体变量，K表示密钥，X、Y表示公式变量，并通过角标的形式来表达共享密钥或者公私钥，N表示随机数，h(X)表示hash函数。
+
+除了变量表达，BAN逻辑还包含一系列语法构件。
+
+P$\lvert\equiv$ X：P相信X，即主体P相信命题X是正确的。
+
+P$\triangleleft$X：P看到X，即主体P接收到了包含X的消息，P能读出并重复。
+
+P$\lvert\sim$X：P曾今说过X，即P曾今发送过一条包含X的消息，并且在发送时，P是相信X的。
+
+P$\lvert\Rightarrow$X：P对X有仲裁权，即P对命题X具有权威性，别的主体对此都信服。
+
+\#(X)：X是新鲜的，即X是本轮协运行过程中产生的新鲜的随机数。
+
+P$\stackrel{K}{\longleftrightarrow}$Q：K是P与Q的共享密钥，并且除了P、Q以及他们所信任的主体之外，其他主体都不知道该密钥。
+
+$\stackrel{K}{\mapsto}$P：P的公钥为K，且除了P以及他所信任的主体之外，其他主体都不知道其对应的私钥$K^{-1}$。
+
+P$\stackrel{K}{\rightleftharpoons}$P：X为P和Q的共享秘密，且除了P和Q以及他们所信任的主体之外，其他主体都不知道X。
+
+$\{X\}_{K}$：用密钥K加密X后得到的密文。
+
+$<X>_{Y}$：消息X和秘密Y的级联。这里主要是利用Y来证明发出消息$<X>_{Y}$的主体的身份。
+
+\paragraph{推理规则}\
+
+BAN逻辑共有7类19条推理规则。
+
+\begin{enumerate}[(1)]
+\item 消息意义规则
+
+消息意义规则共有3条，其目的是从加密消息所使用的密钥以及所包含的秘密来判断消息发送者的身份。
+
+$R_{1}$：$\dfrac{P{\lvert\equiv}Q\stackrel{K}{\longleftrightarrow}P\textrm{,}P\triangleleft\{X\}_{K}}{P{\lvert\equiv}Q{\lvert\sim}X}$
+
+$R_{1}$表明：如果P相信K为P和Q的共享密钥，且P接收到用K加密的X 的密文消息$\{X\}_{K}$，则P相信Q曾发送过消息X。
+
+$R_{2}$：$\dfrac{P{\lvert\equiv}\stackrel{K}{\mapsto}Q\textrm{,} P\triangleleft\{X\}_{K^{-1}}}{P{\lvert\equiv}Q{\lvert\sim}X}$
+
+$R_{2}$表明：如果P相信K是Q的公钥，并且P曾今收到用私钥加密的消息X，那么P相信Q曾今发送过消息X。
+
+$R_{3}$：$\dfrac{P{\lvert\equiv}Q\stackrel{Y}{\rightleftharpoons}P\textrm{,} P\triangleleft\{X\}_{Y}}{P{\lvert\equiv}Q{\lvert\sim}X}$
+
+$R_{3}$表明：如果P相信Q和他共享秘密Y，并且P曾今收到过用Y加密的消息X，那么P相信Q发送过消息X。
+
+\item 随机数验证规则
+
+$R_{4}$：$\dfrac{P{\lvert\equiv}\#(X)\textrm{,} P{\lvert\equiv}Q{\lvert\sim}X}{P{\lvert\equiv}Q{\lvert\equiv}X}$
+
+$R_{4}$表明：如果P相信消息X是新鲜的，且P相信Q曾经发送过X，那么P相信Q相信X。
+
+\item 仲裁规则
+
+$R_{5}$：$\dfrac{P{\lvert\equiv}Q{\lvert\Rightarrow}X\textrm{,} P{\lvert\equiv}Q{\lvert\equiv}X}{P{\lvert\equiv}X}$
+
+$R_{5}$表明：如果P相信Q对X有仲裁权利，并且P相信Q相信X，那么P也相信X。
+
+\item 信仰规则
+
+$R_{6}$：$\dfrac{P{\lvert\equiv}X\textrm{,} P{\lvert\equiv}Y}{P{\lvert\equiv}(X,Y)}$
+
+$R_{7}$：$\dfrac{P{\lvert\equiv}(X,Y)}{P{\lvert\equiv}X}$
+
+$R_{8}$：$\dfrac{P{\lvert\equiv}Q{\lvert\equiv}(X,Y)}{P{\lvert\equiv}Q{\lvert\equiv}X}$
+
+$R_{9}$：$\dfrac{P{\lvert\equiv}Q{\lvert\sim}(X,Y)}{P{\lvert\equiv}Q{\lvert\sim}X}$
+
+$R_{6}$ - $R_{9}$反应了信仰在消息的级联与分割的不同操作中具有一致性和传递性。
+
+\item 消息接收规则
+
+$R_{10}$：$\dfrac{P{\triangleleft}(X,Y)}{P{\triangleleft}X}$
+
+$R_{11}$：$\dfrac{P{\triangleleft}(X)_Y}{P{\triangleleft}X}$
+
+$R_{10}$和$R_{11}$表明如过P接收到了一个级联的消息，那么他可以从中读出子消息。
+
+$R_{12}$：$\dfrac{P{\lvert\equiv}Q\stackrel{K}{\longleftrightarrow}P\textrm{,}P\triangleleft\{X\}_{K}}{P{\triangleleft}X}$
+
+$R_{13}$：$\dfrac{P{\lvert\equiv}\stackrel{K}{\mapsto}Q\textrm{,} P\triangleleft\{X\}_{K}}{P{\triangleleft}X}$
+
+$R_{14}$：$\dfrac{P{\lvert\equiv}\stackrel{K}{\mapsto}Q\textrm{,} P\triangleleft\{X\}_{K^{-1}}}{P{\triangleleft}X}$
+
+$R_{12}$-$R_{14}$表明：如果P收到了一条生命，且P知道相关的密钥，则P可读出消息原文。
+
+\item 消息新鲜性规则
+
+$R_{15}$：$\dfrac{P{\lvert\equiv}\#(X)}{P{\lvert\equiv}\#(X,Y)}$
+
+$R_{15}$表明：如果P相信X是新鲜的，则不论X与任何其他消息级联，整个消息都是新鲜的。
+
+\item 密钥与秘密对称规则
+
+$R_{16}$：$\dfrac{P{\lvert\equiv}R\stackrel{K}{\longleftrightarrow}R'}{P{\lvert\equiv}R'\stackrel{K}{\longleftrightarrow}R}$
+
+$R_{17}$：$\dfrac{P{\lvert\equiv}Q{\lvert\equiv}R\stackrel{K}{\longleftrightarrow}R'}{P{\lvert\equiv}Q{\lvert\equiv}R'\stackrel{K}{\longleftrightarrow}R}$
+
+$R_{18}$：$\dfrac{P{\lvert\equiv}R\stackrel{K}{\rightleftharpoons}R'}{P{\lvert\equiv}R'\stackrel{K}{\rightleftharpoons}R}$
+
+$R_{19}$：$\dfrac{P{\lvert\equiv}Q{\lvert\equiv}R\stackrel{K}{\rightleftharpoons}R'}{P{\lvert\equiv}Q{\lvert\equiv}R'\stackrel{K}{\rightleftharpoons}R}$
+
+\end{enumerate}
+
+\paragraph{BAN逻辑分析具体协议的示例}\
+
+本节将结合Needham-Schroeder对称密钥协议说明BAN逻辑的分析过程，BAN逻辑的分析过程如下： 
 \begin{itemize}
-\item 用逻辑语言对系统的初始状态进行描述
-\item 建立理想化的协议模型，将协议的实际消息转换成BAN逻辑能识别的公式
-\item 对协议进行解释，将协议转换为逻辑语言
-\item 应用逻辑的推理规则根据理想化协议和假设进行推理，推断协议能否完成预期的目标。如果在协议流程结束时能够建立关于共享密钥、对方身份等知识与信念的信任，则表明协议是安全的；反之，表明协议存在安全漏洞。
+\item 协议的形式化描述
+\item 定义初始化假设
+\item 定义协议目标
+\item 应用推理规则对协议进行推理和验证
 \end{itemize}
 
-BAN逻辑的基本模型如图(\ref{fig:3})所示。
+BAN逻辑协议形式化分析流程如图(\ref{fig:3})所示。
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=0.6\linewidth]{figure/3}
-\caption{BAN逻辑的基本模型}
+\includegraphics[width=0.8\linewidth]{figure/3}
+\caption{BAN逻辑协议形式化分析流程}
 \label{fig:3}
 \end{figure}
 
-BAN逻辑的推理规则有：
+\subparagraph{Needham-Schroeder协议过程}
+该协议涉及3个主体，通信双方A，B以及他们都信赖的认证服务器S。其中，$K_{AS}$是A与S之间的共享密钥，$K_{BS}$是B与S之间的共享密钥，$K_{AB}$是A、B双方的会话密钥，由S生成，$N_{A}$和$N_{B}$分别是由A和B生成的随机数。该协议的目标是使通信双方能够互相证实对方的身份，并且为后续的加密通信建立一个会话密钥。协议的过程如下：
+
+\begin{enumerate}[(1)]
+\item A$\to$S:A,B,$N_{A}$
+\item S$\to$A:${\{N_{A},B,K_{AB},{\{K_{AB},A\}}_{K_{BS}}\}}_{K_{AS}}$
+\item A$\to$B:${\{K_{AB},A\}}_{K_{BS}}$
+\item B$\to$A:${\{N_{B}\}}_{K_{AB}}$
+\item A$\to$B:${\{N_{B}-1\}}_{K_{AB}}$
+\end{enumerate}
+
+BAN逻辑可以分析出该协议具有的重放攻击漏洞，过程如下。
+
+\subparagraph{协议的形式化描述（理想化过程）}\
+
+$M_{1}$忽略，因为是明文传递，与安全属性的分析无关。
+
+$M_{2}$：S$\to$A: ${\{N_{A},(A\stackrel{K_{AB}}{\longleftrightarrow}B),\#(A\stackrel{K_{AB}}{\longleftrightarrow}B),{(A\stackrel{K_{AB}}{\longleftrightarrow}B)}_{K_{BS}}\}}_{K_{AS}}$
+
+$M_{3}$：A$\to$B:$ {A\stackrel{K_{AB}}{\longleftrightarrow}B)}_{K_{BS}}$ 
+
+$M_{4}$：B$\to$A:${\{N_{B},(A\stackrel{K_{AB}}{\longleftrightarrow}B)\}}_{K_{AB}}$ from B
+
+$M_{4}$：A$\to$B:${\{N_{B},(A\stackrel{K_{AB}}{\longleftrightarrow}B)\}}_{K_{AB}}$from A
+
+\subparagraph{初始化假设}\
+关于密钥的有效性的假设：
+
+$A_{1}$: $A{\lvert\equiv}A\stackrel{K_{AS}}{\longleftrightarrow}S$
+
+$A_{2}$: $B{\lvert\equiv}B\stackrel{K_{BS}}{\longleftrightarrow}S$
+
+$A_{3}$: $S{\lvert\equiv}A\stackrel{K_{AS}}{\longleftrightarrow}S$
+
+$A_{4}$: $A{\lvert\equiv}B\stackrel{K_{BS}}{\longleftrightarrow}S$
+
+$A_{1}$: $S{\lvert\equiv}A\stackrel{K_{AB}}{\longleftrightarrow}B$
+
+关于S的可信性：
+
+$A_{6}$: $A{\lvert\equiv}(S{\lvert\Rightarrow}A\stackrel{K_{AB}}{\longleftrightarrow}B)$
+
+$A_{7}$: $B{\lvert\equiv}(S{\lvert\Rightarrow}A\stackrel{K_{AB}}{\longleftrightarrow}B)$
+
+$A_{8}$: $A{\lvert\equiv}(S{\lvert\Rightarrow}\#(A\stackrel{K_{AB}}{\longleftrightarrow}B))$
+
+$A_{8}$表明：A相信S所生成的会话密钥同时具有随机数的性质，因为一个”好“的加密密钥通常具备随机数的特征。
+
+关于随机数的新鲜性：
+
+$A_{9}$: $A{\lvert\equiv}\#(N_{A})$
+
+$A_{10}$: $B{\lvert\equiv}\#(N_{B})$
+
+$A_{11}$: $S{\lvert\equiv}(A\stackrel{K_{AB}}{\longleftrightarrow}B)$
+
+$A_{12}$: $B{\lvert\equiv}(A\stackrel{K_{AB}}{\longleftrightarrow}B)$
+
+\subparagraph{协议目标的形式化描述}\
+
+$G_{1}$: $A{\lvert\equiv}A\stackrel{K_{AB}}{\longleftrightarrow}B$
+
+$G_{2}$: $B{\lvert\equiv}A\stackrel{K_{AB}}{\longleftrightarrow}B$
+
+$G_{3}$: $A{\lvert\equiv}B{\lvert\equiv}A\stackrel{K_{AB}}{\longleftrightarrow}B$
+
+$G_{3}$: $B{\lvert\equiv}A{\lvert\equiv}A\stackrel{K_{AB}}{\longleftrightarrow}B$
+
+\subparagraph{逻辑推理以及验证}\
+
+由$M_{2}$可知，$A\triangleleft{\{N_{A},(A\stackrel{K_{AB}}{\longleftrightarrow}B),\#(A\stackrel{K_{AB}}{\longleftrightarrow}B),{(A\stackrel{K_{AB}}{\longleftrightarrow}B)}_{K_{BS}}\}}_{K_{AS}}$ ，即A看到了S发送的由$K_{AS}$加密的$N_{A}$等信息，又由初始化假设$A_{1}$，应用消息意义规则$R_{1}$可得
+
+\begin{equation}
+A{\lvert\equiv}S{\lvert\sim}(N_{A},A\stackrel{K_{AB}}{\longleftrightarrow}B,\#(A\stackrel{K_{AB}}{\longleftrightarrow}B),{(A\stackrel{K_{AB}}{\longleftrightarrow}B)}_{K_{BS}})
+\end{equation}
+
+即A相信S曾今发送过这些消息。
+
+再由初始化假设$A_{9}$，应用随机数验证规则$R_{4}$，可得
+
+\begin{equation}
+A{\lvert\equiv}S{\lvert\equiv}(N_{A},A\stackrel{K_{AB}}{\longleftrightarrow}B,\#(A\stackrel{K_{AB}}{\longleftrightarrow}B),{(A\stackrel{K_{AB}}{\longleftrightarrow}B)}_{K_{BS}})
+\end{equation}
+
+即A信任S相信这些信息的正确性。
+
+应用信仰规则$R_{7}$可得
+
+\begin{equation}
+A{\lvert\equiv}S{\lvert\equiv}A\stackrel{K_{AB}}{\longleftrightarrow}B,{\quad}A{\lvert\equiv}S{\lvert\equiv}\#(A\stackrel{K_{AB}}{\longleftrightarrow}B)\label{e1}
+\end{equation}
+
+即A信任S信任$K_{AB}$是A和B的共享密钥，A也信任S信任上述知识是新鲜的。
+
+由初始化假设$A_{6}$、$A_{8}$以及式(\ref{e1})，应用仲裁规则$R_{5}$可得
+
+\begin{equation}
+A{\lvert\equiv}A\stackrel{K_{AB}}{\longleftrightarrow}B,{\quad}A{\lvert\equiv}\#(A\stackrel{K_{AB}}{\longleftrightarrow}B)\label{e2}
+\end{equation}
+
+A信任$K_{AB}$是A和B的共享密钥，A信任此知识是新鲜的。
+
+由$M_{3}$可知，$B\triangleleft{(A\stackrel{K_{AB}}{\longleftrightarrow}B)}_{K_{BS}}$即B曾今看到过由$K_{BS}$加密后的$K_{AB}$，由初始化假设$A_{2}$，应用消息意义规则$R_{1}$，可得
+
+\begin{equation}
+B{\lvert\equiv}S{\lvert\sim}A\stackrel{K_{AB}}{\longleftrightarrow}B
+\end{equation}
+
+即B信任S曾今发送过A和B的共享密钥$K_{AB}$。
+
+再由初始化假设$A_{12}$，应用随机数验证规则$R_{4}$，可得
+
+\begin{equation}
+B{\lvert\equiv}S{\lvert\equiv}A\stackrel{K_{AB}}{\longleftrightarrow}B
+\end{equation}
+
+即B信任S信任$K_{AB}$是A和B的共享密钥。
+
+再由初始化假设$A_{7}$，应用仲裁规则$R_{5}$，可得
+
+\begin{equation}
+B{\lvert\equiv}A\stackrel{K_{AB}}{\longleftrightarrow}B\label{e3}
+\end{equation}
+
+即B信任$K_{AB}$是A和B的共享密钥。
+
+通过$M_{4}$和$M_{5}$，主体A、B均确信对方在线，再由$M_{4}$可知
+
+\begin{equation}
+A\triangleleft{\{N_{B},(A\stackrel{K_{AB}}{\longleftrightarrow}B)\}}_{K_{AB}}{\quad}from B
+\end{equation}
+
+即A曾今见到过由B发送的，通过$K_{AB}$加密的$N_{B}$和$K_{AB}$
+
+由式(\ref{e2})中的$A{\lvert\equiv}A\stackrel{K_{AB}}{\longleftrightarrow}B$，应用消息意义规则$R_{1}$，可得
+
+\begin{equation}
+A{\lvert\equiv}B{\lvert\sim}(N_{B},A\stackrel{K_{AB}}{\longleftrightarrow}B)
+\end{equation}
+
+即A信任B曾今发送过$N_{B}$和$K_{AB}$
+
+再由信仰规则$R_{9}$可得
+
+\begin{equation}
+A{\lvert\equiv}B{\lvert\sim}(A\stackrel{K_{AB}}{\longleftrightarrow}B)
+\end{equation}
+
+即A信任B发送过$K_{AB}$
+
+再由式(\ref{e2})中的$A{\lvert\equiv}\#(A\stackrel{K_{AB}}{\longleftrightarrow}B)$，根据随机数验证规则$R_{4}$可得
+
+\begin{equation}
+A{\lvert\equiv}B{\lvert\equiv}A\stackrel{K_{AB}}{\longleftrightarrow}B\label{e4}
+\end{equation}
+
+即A信任B信任$K_{AB}$是A和B的共享密钥。
+
+同样，由$M_{5}$可知，$B\triangleleft{\{N_{B},(A\stackrel{K_{AB}}{\longleftrightarrow}B)\}}_{K_{AB}}$，B曾看到过A发送的，用$K_{AB}$发送的$N_{B}$和$K_{AB}$，经过类似推理，可得
+
+\begin{equation}
+B{\lvert\equiv}A{\lvert\equiv}A\stackrel{K_{AB}}{\longleftrightarrow}B\label{e5}
+\end{equation}
+
+即B信任A信任$K_{AB}$是A和B的共享密钥。
+
+由上述推导过程中的式(\ref{e2})、式(\ref{e3})、(\ref{e4})和式(\ref{e5})可知，在12个假设均满足的情况下，协议达到了预期目标。而为了验证协议满足目标$G_{2}$，必须借助于初始化假设$A_{12}$，即B相信会话密钥$K_{AB}$是新鲜的，而这一假设是不合理的，因为B无从获得$K_{AB}$是否新鲜，因此该协议可能受到重放攻击。
+
+BAN逻辑的不足主要表现在它逻辑的抽象级别较高，分析范围过窄，不能对知识进行推理，只能分析协议的认证性质，只能发现协议的缺陷，不能保证协议一定是安全的\cite{4}。
 
 \begin{itemize}
-\item 消息含义规则
-\item 随机数验证规则
-\item 临时值验证规则
-\item 仲裁规则
-\item 信仰规则
-\item 发送规则
-\item 接收规则
-\item 共享密钥规则
-\item 共享秘密规则
+\item 协议的理想化过程不规范
+\item 协议的初始化假设不合理
+\item 缺乏完备性
+\item 缺乏一个定义良好、确切的语义
 \end{itemize}
 
-消息含义规则如下图表示：
+\subsubsection{类BAN逻辑}
+因为BAN逻辑存在着上节提出的诸多问题，所以人们尝试改进BAN逻辑，由此产生了多种类BAN逻辑，如GNY、AT、VO、SVO和MB等逻辑等。
+\paragraph{GNY逻辑}
+GNY逻辑是第一个对BAN进行增强扩充的逻辑，它试图消除BAN逻辑中对主题城市性的假设、消息源假设和可识别假设，并从以下方面对BAN逻辑进行了改进。
 
-\begin{figure}[thbp!]
-\centering
-\includegraphics[width=0.6\linewidth]{figure/2}
-\caption{消息含义规则示例}
-\label{fig:2}
-\end{figure}
+\begin{itemize}
+\item 增加了新的逻辑构件和规则，推广了逻辑分析的应用范围，使之能分析某些具有单向函数的密码协议。
+\item 取消了全局假设，增强了逻辑分析能力。
+\item 理想化协议时保留了明文
+\item 增加了“拥有”集合，即主体能看到的所有符号的集合。
+\item 引入“可识别性”概念，可以描述主体对其所期望的消息格式的识别能力。
+\item 引入了“不是由此手法”的识别机制，来判断消息的来源，取消了BAN逻辑中主体能识别协议消息来源的假设。
+\end{itemize}
 
-这种方法的不足主要表现在它逻辑的抽象级别较高，分析范围过窄，不能对知识进行推理，只能分析协议的认证性质，只能发现协议的缺陷，不能保证协议一定是安全的\cite{4}。
+\paragraph{AT逻辑}
+与GNY逻辑类似，均对BAN逻辑的本质与局限性进行了分析与改进。不同的是，AT逻辑首次提出了逻辑系统的语义模型，表达能力更强。
 
-\subsection{模型检测（model checking）}
+\paragraph{SVO逻辑}
+VO逻辑的目的是扩展BAN逻辑的应用范围，比如，增加了分析Diffie-Hellman协议的能力，进而可以分析Internet密钥交换协议IKE和SSL协议等。VO逻辑还细化了认证协议的认证目标，给出了6种不同形式的认证目标，包括Ping认证、实体认证、安全密钥的建立、密钥确认、密钥新鲜性认证和共享密钥的互信任等。
+
+SVO逻辑在总结BAN逻辑、GNY逻辑、AT逻辑以及VO逻辑的基础上发展而成，具有相当详细的计算模型，具有几号的扩展能力，简介、易用，标志着BAN逻辑以及BAN类逻辑的成熟。
+
+\paragraph{Kailar逻辑}
+随着电子商务协议的出现，一些新的安全协议的心智引起了人们的密切关注，如不可否认性和可追究性等安全属性。Kailar逻辑恰恰是针对此类安全属性而开发的形式化分析工具。
+
+\subsubsection{基于知识的逻辑}
+
+人们发现，BAN逻辑以及类BAN逻辑都是基于主体信仰的，一个主要问题在与主体的信仰有可能是错误的，而他本人可能并不知道该信仰是错误的。基于错误的信仰并不能保证协议的安全性。为此，P.Bieber基于CKT5认知逻辑，提出了一套基于知识的安全协议分析逻辑。认知逻辑最早由Hintikka与1962年提出，1984年，Halpern和Moses将其成功地应用于分布式系统的分析中。CKT5认知逻辑对认知逻辑进行了补充，从而能描述在敌对环境中利用加密消息进行通信的各主体的知识状态。
+
+\subsubsection{非单调逻辑}
+
+前面介绍的逻辑分析方法都是针对知识和信仰的单调推理逻辑，即一旦主体知道了某些事情或者拥有了某些信仰，他就永远知道这些事情或者拥有这些信仰。这在某些情况下是不适用的。例如，如果某一会话密钥被泄露了，那么该密钥是“好密钥”的信仰就要被改变，不再成立。为此，Moser提出了一种针对信仰的非单调推理逻辑，但不能处理非单调的知识。Rubin博士提出了一个分析安全协议的新方法，用以非单调地分析密码协议，这种分析方法称为非单调（Nonmonotomic）逻辑分析方法。
+
+\subsection{模型检测技术（model checking）}
 模型检测最早用于分析和模拟硬件的工作过程。1996年，Gavin Lowe首次将模型检测器FDR用于安全协议的验证，结合CSP安全协议模型成功发现了针对NSPK协议的攻击，伺候，又出现了NRL，Interrogator，CSP/FDR，Brutus，SMV，MUφ，SPN，Athena，OFMC，SATMC等大量自动化验证器\cite{1}\cite{6}。
 
 模型检测主要通过状态空间搜索方法来检测协议安全性，其基本思想是将安全协议看做包含一个状态集合、一个动作集合、一个状态转移集合的分布式系统。协议的执行过程就是状态的迁移过程，协议验证就是遍历整个状态空间，检查是否能由初试的状态到达某个不安全状态或者可以引发某个不良行为的状态。初始状态到最终状态之间的所有状态构成了一个协议执行轨迹，如果一个协议不安全，就可以通过协议迹给出相应的反例。
@@ -326,7 +639,7 @@ BAN逻辑的推理规则有：
 专用模型检测器从模型中分离出入侵者，用户不需要事先规定入侵者必须知道的消息，就可以进行协议验证。但是，专用模型检测器的简约技术不如通用模型检测器，在验证复杂协议时经常由于状态爆炸的问题而难以得到验证结果，或者验证结果过给出的反例过于复杂，难以构建攻击路径。其次，专用模型检测器通常只适用于验证某一类型的协议，或者在描述协议的某些性质和验证协议的某些阶段工作做的较好，而在其他方面则存在明显的缺陷\cite{3}。
 
 
-\subsection{定理证明}
+\subsection{定理证明技术}
 基于定理证明的安全协议分析方法不关注针对协议的攻击，其目的只在于证明安全协议是否满足响应的安全属性。
 
 定理证明的分析方法解决了基于逻辑推理方法不能解决保密性验证，缺乏清晰语义的缺点，还解决了模型检测技术很难解决状态空间爆炸的缺点，可以处理不受限会话数目和不受限消息大小，在此方面Pauson和Blanchet的工作最具有代表性。但是Pauson基于归纳的方法只能实现半自动的协议形式化验证，Blanchet基于归结定理证明实现了秘密性和认证性的自动化验证，其验证器可以保证终止，但是不保证完备性，有攻击误报的情况\cite{6}。
