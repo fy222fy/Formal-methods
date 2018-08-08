@@ -1,6 +1,5 @@
 acmart.cls
 sample-sigconf.synctex.gz
-*.pdf
 *.doc
 *.docx
 *.cut
