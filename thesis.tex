@@ -199,7 +199,7 @@ Formal verification can be helpful in proving the correctness of systems such as
 
 The verification of these systems is done by providing a formal proof on an abstract mathematical model of the system, the correspondence between the mathematical model and the nature of the system being otherwise known by construction. Examples of mathematical objects often used to model systems are: finite state machines, labelled transition systems, Petri nets, vector addition systems, timed automata, hybrid automata, process algebra, formal semantics of programming languages such as operational semantics, denotational semantics, axiomatic semantics and Hoare logic\cite{formalverification}.
 
-
+\newpage
 \section{形式化方法在不同领域的应用}
 形式化方法的应用主要如下：
 
@@ -242,12 +242,18 @@ The verification of these systems is done by providing a formal proof on an abst
 
 
 \subsubsection{安全协议的形式化验证（formal verification）}
-对已经存在的安全协议进行验证，判断这些安全协议是否达到预期的目标。
+对已经存在的安全协议进行验证，判断这些安全协议是否达到预期的目标。本论文的下一章节详细介绍了安全协议的形式化验证技术。
 
 \subsubsection{安全协议的形式化设计（formal design）}
-从无到有，设计出安全的协议。
+最初人们设计密码协议主要是采用非形式化的方法，由有经验的研究人员根据实际需求设计一些满足特定应用环境的安全协议。事件证明，几乎所有这样设计出的协议都存在安全漏洞。形式化分析方法在成功地发现许多协议漏洞的同时，也不断为协议设计者总结了很多设计经验，如Adnerson和Needham提出的一些健壮性原则，Abadi和Needham提出的理想协议设计规则。但这些规则和经验性原则都是非形式化的，即使协议满足全部的规则，也不能完全保证协议是安全的，于是，形式化的方法也逐渐地应用与协议设计方面。
 
+目前形式化协议设计的思路主要有两种。
 
+一种是研究用于设计协议的方法学，采用这种特定的方法学设计完成后的安全协议可以方便地进行形式化分析，如模块化方法和Fail-Stop协议概念等。模块化方法采用安全推理工具和构成定理（Composition Theorem）得出将两个协议合并为一个安全密码协议的充分条件，当条件不满足时，给出的新协议可能并不安全。Fail-Stop协议的原则就是在一条消息受到攻击时，该消息的所有后继都停止发送，这就保证了攻击不会对外部环境造成影响。另外，Fail-Stop协议的安全性分析比较简单，只需要证明协议在被动攻击下是安全的即可。
+
+另一种协应用更为广泛的设计思路是层次化设计方法，它相当于一个由多种抽象模型形成的堆栈，栈顶是协议设计者根据协议安全性能提出的协议抽象模型，协议设计的过程就是将该抽象模型逐层细化，直到最后得到协议的精确描述或者确切的代码。在协议设计思想的基础上，产生了一些新的协议设计的方法，如Rudolph利用Asynchronous Product Automata设计新的安全协议，Buttyan扥更实用管道的概念进行安全协议设计等。另外，Guttman等人使用认证测试方法，以串空间模型为基础提出了一种用于协议设计的方法。
+
+虽然形式化的方法在协议设计中取得了一定的成果，但是还没有形成完整、有效地理论模型。
 \newpage
 \section{安全协议的形式化分析方法}
 安全协议的形式化分析从方法上可以分为：逻辑推理、模型检测、定理证明。
@@ -410,7 +416,7 @@ BAN逻辑协议形式化分析流程如图(\ref{fig:3})所示。
 \label{fig:3}
 \end{figure}
 
-\subparagraph{Needham-Schroeder协议过程}
+\subparagraph{Needham-Schroeder协议过程}\
 
 该协议涉及3个主体，通信双方A，B以及他们都信赖的认证服务器S。其中，$K_{AS}$是A与S之间的共享密钥，$K_{BS}$是B与S之间的共享密钥，$K_{AB}$是A、B双方的会话密钥，由S生成，$N_{A}$和$N_{B}$分别是由A和B生成的随机数。该协议的目标是使通信双方能够互相证实对方的身份，并且为后续的加密通信建立一个会话密钥。协议的过程如下：
 
@@ -627,7 +633,7 @@ SVO逻辑在总结BAN逻辑、GNY逻辑、AT逻辑以及VO逻辑的基础上发�
 
 \subsection{模型检测技术（model checking）}
 
-模型检测最早用于分析和模拟硬件的工作过程。1996年，Gavin Lowe首次将模型检测器FDR用于安全协议的验证，结合CSP安全协议模型成功发现了针对NSPK协议的攻击，伺候，又出现了NRL，Interrogator，CSP/FDR，Brutus，SMV，MUφ，SPN，Athena，OFMC，SATMC等大量自动化验证器\cite{1}\cite{6}。
+模型检测最早用于分析和模拟硬件的工作过程。1996年，Gavin Lowe首次将模型检测器FDR（Failures-Divergences Refinement:故障发散提炼器）用于安全协议的验证，结合CSP安全协议模型成功发现了针对NSPK协议的攻击，此后，又出现了NRL（Naval Research Laboratory）协议分析器，Interrogator系统，CSP/FDR模型检测器，Brutus模型检测器，SMV，MUφ，SPN，Athena，OFMC，SATMC等大量自动化验证器\cite{1}\cite{5}\cite{6}。
 
 模型检测技术的安全协议分析方法也称为状态检测方法。主要利用有限状态机的理论，通过状态空间搜索方法来检测协议安全性，其基本思想是将安全协议看做包含一个状态集合、一个动作集合、一个状态转移集合的分布式系统。协议的执行过程就是状态的迁移过程，协议验证就是遍历整个状态空间，检查是否能由初试的状态到达某个不安全状态或者可以引发某个不良行为的状态。初始状态到最终状态之间的所有状态构成了一个协议执行轨迹，如果一个协议不安全，就可以通过协议迹给出相应的反例\cite{2}\cite{6}。
 
@@ -699,6 +705,10 @@ Athena是Song等人开发的专用于协议验证的定理证明器，它使用�
 阶函数是一个把攻击者的知识和协议消息映射成整数的函数。使用阶函数可以把消息分成攻击者知道的消息和攻击者不可知道的消息两大类。协议的认证性和秘密性均基于阶函数的值来判定。
 
 后来，Heather和Schneider又给出了一个简历阶函数的算法和推导消息阶函数值的过程，这使得阶函数的证明过程得以自动化实现\cite{6}。
+
+\section{典型的安全协议形式化分析工具}
+\subsection{基于知识与信念的模态逻辑方法的工具}
+\subsection{基于模型检测与定理证明的分析工具}
 
 
 \section{总结}
