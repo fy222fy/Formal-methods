@@ -646,7 +646,7 @@ SVO逻辑在总结BAN逻辑、GNY逻辑、AT逻辑以及VO逻辑的基础上发�
 常用的模型检测技术包括有限状态机、Petri网和通信进程演算（Cacula for Communication System, CCS）。
 
 \subsubsection{Dolev-Yao模型}
-模型检测方法基于Dolev-Yao模型，故本节先对Dolev-Yao模型进行介绍。
+模型检测方法和定理证明方法大多是基于Dolev-Yao模型的，故本节先对Dolev-Yao模型进行介绍。
 
 该模型是由Dolev、Yao与1983年首次提出的安全协议形式化分析的假设和模型，分别刻画了密码系统模型以及攻击者模型。
 
@@ -668,6 +668,148 @@ SVO逻辑在总结BAN逻辑、GNY逻辑、AT逻辑以及VO逻辑的基础上发�
 \end{enumerate}
 
 Dolev-Yao模型中的攻击者非常强大，这使得在分析安全协议时，可以使安全协议经手极其恶劣的网络环境的考验而确保其安全属性成立，但是，该模型下，无法对所使用的密码系统的缺陷进行分析，从而使得由该模型建立的形式化分析方法无法用于分析安全协议密码系统相关的缺陷攻击和猜测攻击，同时，Dolev-Yao模型下攻击者的能力太强，攻击者总能实现拒绝服务攻击，这又和现实情况相违背。
+\subsubsection{有限状态机}
+有限状态机，又称有限状态自动机，是表示有限个状态以及在这些状态之间转移和动作等行为的数学模型。
+
+有限状态机在不同领域中都很重要，在计算机科学中，有限状态机被用于建模应用行为、硬件电路系统设计、软件工程、编译器、网络协议和计算与语言的研究。
+
+有限状态机是描述协议常用的模型，可以用有向图直观地表示协议的模型。通常，将协议有限状态机模型定义为一个四元祖M：
+
+\begin{equation}
+M=\{S,i,e,T\}
+\end{equation}
+
+其中，S是模型中协议所有状态的又穷集合，即系统状态机；i为系统初始状态的有穷集合，i$\in$S，T为状态转换函数的有穷集合，定义系统的状态转换规则，转换函数定义为$s_{i}\stackrel{e}{\longrightarrow}s_{j}\in{T}，s_{i}\in{S}，S_{j}\in{S}，e\in{E}$，表示当系统属于状态$s_{i}$时，如果有事件e，那么系统状态就变为$s_{j}$
+
+\subsubsection{通信进程方法}
+通信进程演算的数学基础是进程代数，由R.Miller创立的通信进程演算已经在协议工程领域得到了重要应用，C.A.Hoare在CCS的基础上创立了通信顺序进程。通信顺序进程（Communicating Sequential Process, CSP）是一种用来描述并发系统中通过消息交互的通信实体行为的抽象符号语言。这种方法能够用来描述和分析由很多进程构成的系统，进程之间通过消息交换而相互作用。
+
+CSP方法在安全协议的分析验证方面得到了成功的应用，主要步骤是将安全协议的信息交互规约为CSP，将其安全目标也在CSP框架内描述为CSP要说明的问题，然后通过有效地分析方法对这些描述进行推理。目前，FDRC（Failures-Divergences Refinement:故障发散提炼器）是比较有代表性的自动化模型检测器。
+
+\paragraph{CSP的基本概念}
+\subparagraph{事件}\
+
+协议是通过实体之间执行一系列的事件（Event）来执行的，一个典型的CSP事件表示为c.i.j.m，其中包括一个信道c、一个消息源i、一个消息目的地j、一个消息m。
+
+\subparagraph{进程}\
+
+CSP通过用某一进程（Processes）可能涉及到的事件来描述该进程，从而提供了一种描述进程可达状态的方法。进程通常表示为：执行状态中的一个动作（事件）、动作结束后的状态。常用的CSP有：
+
+\begin{enumerate}[(1)]
+\item 停止进程 STOP
+\item 事件前缀 a$\rightarrow$P，表示执行动作a后按照进程P来执行。
+\item 顺序组合 P；Q  表示P结束前只运行P的事件，P结束后才运行Q的事件，并且直到Q终止，P；Q才终止。
+\item 输入前缀选择 $c?x:A\rightarrow{P}$，表示在信道c上接受任意输入x$\in$A之后，执行进程P。
+\item 输出前缀选择$c!x\rightarrow{P}$，表示在信道c上输出x之后，执行进程P。
+\item 进程间选择P$\square$Q，表示在P和Q之间做选择，结果或为P，或为Q。$\square$的作用就是给出了两个进程动作的选择项，然后按照其中一个选择的动作运行。
+\item 并行进程P$\parallel$Q，强制所有的事件都是同步的，当P和Q都可以执行时，P$\parallel$Q才可以执行。
+\item 接口并行
+\item 一般穿插P$\mid\mid\mid$Q，表示P和Q使用分离的事件集合。$\mid\mid\mid$S表示执行S集合中所有进程的并行运行。
+\item 同步并行$P_{X}\parallel$$_{Y}Q$表示P与Q并联，并且P和Q的字母表是X和Y，即P一定统一所有X中的通信，Q一定统一所有Y中的通信。
+\item 成功终止 SKIP
+\item 递归进程$\mu$P.F(P)，表示F(P)递归地执行。
+\end{enumerate}
+
+\subparagraph{迹}\
+一个进程的迹（Traces）模型描述了该进程所有可能的事件序列。
+
+与迹有关的表示如下：
+
+\begin{enumerate}[(1)]
+\item tr$\uparrow$D：表示tr中由D中事件组成的最大子序列。
+\item tr$\downarrow$C：表示在信道C上传输的最长消息序列。
+\item tr$\Downarrow$C：表示在C中某些信道上传输的消息集合。
+\item $\delta$(tr)：表示在迹tr上出现的事件集合。若将此操作扩展到进程上，则$\delta$(P)表示在进程P的某些迹上出现的事件集合。
+\end{enumerate}
+
+迹上的运算规则有：
+
+\begin{enumerate}[(1)]
+\item traces(STOP) = $\{\langle\rangle\}$
+\item traces(a$\rightarrow$P) = $\{\langle\rangle\}\cup\{\langle{a}\rangle{s}\mid{s}\in{traces(P[a/x])}\}$，即该进程要么什么都不做，要么第一个事件总是a，并且其后有一个P的迹。
+\item trace(P$\square$Q)=traces(P)$\cup$traces(Q)，该进程提供了P的迹和Q的迹。
+\end{enumerate}
+
+\subparagraph{CSP网络模型描述具体的协议}\
+
+下面以Yahalom协议为例，来说明用CSP方法对协议的建模过程。协议内容如下：
+
+$m_{1}$:  A$\rightarrow$B:a.$n_{a}$
+
+$m_{2}$:  B$\rightarrow$S:\{a.$n_{a}.n_{b}\}_{ServerKey(b)}$
+
+$m_{3}$:  S$\rightarrow$A:\{b.$k_{ab}.n_{a}.n_{b}\}_{ServerKey(b)}.\{a.k_{ab}\}_{ServerKey(b)}$
+
+$m_{4}$:  A$\rightarrow$B:\{a.$n_{a}.k_{ab}\}_{ServerKey(b)}.\{n_{b}\}_{k_{ab}}$
+
+该协议参与方有三个，分别是初始者A，响应者B和服务器S。
+
+初始者A的CSP进程描述如下，其中m表示任意的输入m，因为在m3中，A无法对收到的$\{a.k_{ab}\}_{ServerKey(b)}$进行解密，因为A没有ServerKey(b)，所以表示成任意输入m是合理的。env?B:Agent是一个表达式，表示进程的局部环境会告诉它如何开放一个与代理B的会话。
+
+\begin{multline}
+Initiator(A,n_{a})=env?B:Agent\rightarrow{send.A.B.a.n_{a}}\rightarrow\\
+\square{k}_{ab}\in{Key},n_{b}\in{Nonce},\\
+m\in{T}\left(
+\begin{array}{lr}
+	{receive.S.A\{b.k_{ab}.n_{a}.n_{b}\}_{ServerKey(a)}.m}\rightarrow& \\
+	{send.A.B.m.\{n_{b}\}_{k_{ab}}}\rightarrow{Session(A,B,k_{ab},n_{a},n_{b})}&
+\end{array}
+\right)
+\end{multline}
+
+同理，响应者的角色进程为:
+
+\begin{multline}
+Responder(B,n_{b})=\square{k_{ab}}\in{Key},A\in{Agent} \\
+\left(
+\begin{array}{lr}
+	{receive.A.B.a.n_{a}\rightarrow}& \\
+	{send.B.S.b.\{a.n_{a}.n_{b}\}_{ServerKey_{b}}}\rightarrow& \\
+	{receive.A.B.\{a.k_{ab}\}_{ServerKey(b)}.\{n_{b}\}_{k_{ab}}\rightarrow}& \\
+	{Session(B,A,k_{ab},n_{a},n_{b})})&
+\end{array}
+\right)
+\end{multline}
+
+服务器的CSP进程如下，其中，用一般穿插来保证$k_{ab}$每次不是单个的密钥，而是属于服务器密钥集合的不同密钥。
+
+\begin{multline}
+Server(S)={\mid\mid\mid}_{k_{ab}\in{KEYS_{Server}}}Serv(S,k_{ab}) \\
+Serv(S,k_{ab})=\square{a},b\in{Agent};n_{a},n_{b}\in{Nonce}\\
+\left(
+\begin{array}{lr}
+	{receive.B.S.b.\{a.n_{a}.n_{b}\}_{ServerKey(b)}}\rightarrow& \\
+	{send.S.A.\{B.k_{ab}.n_{a}.n_{b}\}_{ServerKey(a).\{a.k_{ab}\}_{ServerKey(b)}}}\rightarrow& \\
+	{Server(S,k_{s})}&
+\end{array}
+\right)
+\end{multline}
+
+因为Yahalom协议中，参与方AB既可以作为初始者，也可以作为响应者，所以统称他们为代理a，一个特定的代理a的CSP描述为：
+
+\begin{equation}
+User_{a}=({\mid\mid\mid}_{n\in{Nonce\_I_{a}}}Initiator(a,n))\mid\mid\mid({\mid\mid\mid}_{n\in{Nonce\_R-{a}}}Responder(a,n))
+\end{equation}
+
+对于一个有入侵者的网络环境，应当存在一个入侵者进程，它能够偷听、阻止任何一个消息，也可以基于假设产生新的消息，同时也可以冒充其他代理的身份，入侵者的CSP进程表示为：
+
+\begin{multline}
+Inruder(X)=learn?m:messages\rightarrow{Intruder(close(X\cup{\{m\}}))}\\
+\square{?}m:X\cap{messages}\rightarrow{Intruder(X)}
+\end{multline}
+
+结合用户、服务器、入侵者，可以将Yahalom协议进行如下描述：
+
+\begin{equation}
+Yahalom=User_{A}\mid\mid\mid{User_{B}}\mid\mid\mid{User_{S}}\mid\mid{Intruder}
+\end{equation}
+
+\subsubsection{Pertri网}
+Petri网是由伯恩大学的C.A.Petri于1962年提出的一种可表示系统部件异步并发操作的网络模型。Petri往在科研工作中的各个领域得到了广泛的应用，并逐渐发展成为高级Petri网：谓词/变迁系统（Pr/T系统）和颜色Petri网（coloured Petri net，CPN）系统。
+
+Petri网定义为5元系统\{P,T,I,O,M\}，其中，P为位置集合，$P=\{P_{1},P_{2},\ldots{P_{i}},\ldots{\}}$；T为转换集；I为输入函数集；O为输出函数集；M为标记集，也是Petri网的状态集合。
+
+Petri网可以用来描述协议的状态。
 
 \subsubsection{通用模型检测器}
 通用模型检测器有FDR、SPN、SMV、BRUTUS等。
@@ -687,8 +829,9 @@ Dolev-Yao模型中的攻击者非常强大，这使得在分析安全协议时�
 
 （归结原理：将普通形式逻辑中充分条件的推理形式符号化，并向一阶谓词逻辑推广的一种推理法则。）
 
-\subsubsection{归纳法}
-Pauson首先将归纳法应用于协议安全性证明。Isabell把协议定义为所有可能时间执行轨迹的集合，每个执行序列反映了协议主体之间可能的通信方式。它通过对路径的归纳来证明性质的成立。该工具可以用于一个任意次数的协议会话，其证明股构成与非形式化证明方法有着相同的结构，这是它的有点，但是一旦推导失败，就很难获得协议可能的漏洞，并且分析不保证会终止，且需要大量的用户干预\cite{6}。
+\subsubsection{Paulson归纳法}
+Pauson首先将归纳法应用于协议安全性证明。Isabelle工具把协议定义为所有可能时间执行轨迹的集合，每个执行序列反映了协议主体之间可能的通信方式。它通过对路径的归纳来证明性质的成立。该工具可以用于一个任意次数的协议会话，其证明股构成与非形式化证明方法有着相同的结构，这是它的有点，但是一旦推导失败，就很难获得协议可能的漏洞，并且分析不保证会终止，且需要大量的用户干预\cite{6}。
+
 
 \subsubsection{串空间模型（Strand-Space）}
 Fabrega等人提出了串空间模型，其中协议的正确性可以表示成不同类型串之间的连接关系。正确性证明的过程首先是建立协议规范可能形成的所有串束，再根据串束中串的连接情况判断协议中的安全属性是否得到满足。
@@ -708,7 +851,31 @@ Athena是Song等人开发的专用于协议验证的定理证明器，它使用�
 
 \section{典型的安全协议形式化分析工具}
 \subsection{基于知识与信念的模态逻辑方法的工具}
-\subsection{基于模型检测与定理证明的分析工具}
+\subsection{基于模型检测的分析工具}
+\subsubsection{FDR（故障偏差精炼检查器）}
+FDR(Failures-Divergence Refinement，故障偏差精炼检查器)是指银行总针对有限状态机的模型检查工具，其理论基础是Hoare的CSP（通信顺序进程）并发模型，它通过对一个希望满足某些属性的变迁系统的精炼来验证这些属性是否成立。
+
+早期的FDR只用直观的模型检测技术，在几小时内就能处理约$10^{7}$个状态，但是状态空间随着网络中进程数目呈现指数增长，因此该工具显示出了局限性。
+
+Casper/FDR使用进程代数CSP和模型检测器FDR来分析安全协议，Capser（Complier for the Analysis of Security Protocols）是一个安全协议分析编译器，它能将高级语言协议规范转换为CSP语言，解决了利用CSP描述协议系统费时，易出错的问题。是目前应用十分广泛的一个模型检测器，它在NSPK协议发表17年后检测出了协议的中间人攻击。
+
+Casper/FDR的工作步骤如下：
+
+\begin{enumerate}[(1)]
+\item 参与协议的每个主题都用CSP进程表示。
+\item 攻击者也用CSP进程表示。
+\item 检查系统是否满足安全性质，如认证性、保密性，使用FDR搜索状态空间以发现任何不安全的路径是否存在。
+\item 如果FDR发现协议的性质不满足，它将给出性质不满足的路径，这条路径对应协议的一个攻击\cite{1}。
+\end{enumerate}
+
+利用Casper/FDR分析安全协议的步骤如图(\ref{fig:4})所示：
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.8\linewidth]{figure/4}
+\caption{Casper/FDR分析安全协议的步骤\cite{1}}
+\label{fig:4}
+\end{figure}
 
 
 \section{总结}
